@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h handler) GetUser(c *fiber.Ctx) error {
+func (h handler) getUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var users models.User
 

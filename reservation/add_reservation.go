@@ -7,18 +7,17 @@ import (
 )
 
 type AddReservationBody struct {
-	Id          int    `json:"id_room" gorm:"primarykey"`
-	Rname       string `json:"roomname"`
+	RoomID      string `json:"room_id"`
 	Instructor  string `json:"instructor"`
 	Phone       string `json:"phone"`
-	Description string `json:"Description"`
+	Description string `json:"description"`
 	Date        string `json:"date"`
-	TimeS       string `json:"time-start"`
-	TimeE       string `json:"time-end"`
+	TimeS       string `json:"time_start"`
+	TimeE       string `json:"time_end"`
 	Status      string `json:"status"`
 }
 
-func (h handler) AddReservation(c *fiber.Ctx) error {
+func (h handler) addReservation(c *fiber.Ctx) error {
 
 	body := AddReservationBody{}
 
@@ -27,7 +26,8 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 	}
 
 	var reservation models.Reservation
-	reservation.Rname = body.Rname
+	
+	reservation.RoomID = body.RoomID
 	reservation.Instructor = body.Instructor
 	reservation.Phone = body.Phone
 	reservation.Description = body.Description

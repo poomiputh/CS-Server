@@ -9,11 +9,12 @@ type handler struct {
 	DB *gorm.DB
 }
 
-func UserRoutes(app *fiber.App, db *gorm.DB) {
+func ReservationRoutes(app *fiber.App, db *gorm.DB) {
 	h := &handler{
 		DB: db,
 	}
-	routes := app.Group("/reservation")
-	routes.Post("/", h.AddReservation)
-
+	routes := app.Group("/reservations")
+	routes.Post("/", h.addReservation)
+	routes.Get("/", h.getReservations)
+	routes.Delete("/:id", h.deleteReservation)
 }

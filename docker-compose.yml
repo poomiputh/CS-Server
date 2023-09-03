@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes: 
       - dbdata:/var/lib/postgresql/data
     healthcheck:
@@ -27,6 +27,8 @@ services:
         condition: service_healthy # waiting until heathcheck of postgres is good
     ports:
       - "3000:3000"
+    volumes:
+      - "./users:/go/src/go-fiber-api-docker/users"
 
 volumes:
   dbdata: # persist database

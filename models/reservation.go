@@ -1,13 +1,13 @@
 package models
 
 type Reservation struct {
-	Id          int    `json:"id_room" gorm:"primarykey"`
-	Rname       string `json:"roomname"`
+	ID          uint   `json:"id" gorm:"primaryKey"`
+	RoomID      string `json:"room_id" gorm:"not null;default: null"`
 	Instructor  string `json:"instructor"`
-	Phone       string `json:"phone"`
-	Description string `json:"Description"`
-	Date        string `json:"date"`
-	TimeS       string `json:"time-start"`
-	TimeE       string `json:"time-end"`
-	Status      string `json:"status"`
+	Phone       string `json:"phone" gorm:"not null;default: null"`
+	Description string `json:"description"`
+	Date        string `json:"date" gorm:"not null;default: null"`
+	TimeS       string `json:"time_start" gorm:"not null;default: null"`
+	TimeE       string `json:"time_end" gorm:"not null;default: null"`
+	Status      string `json:"status" gorm:"not null;default: null"`
 }

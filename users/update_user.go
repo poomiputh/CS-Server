@@ -13,7 +13,7 @@ type UpdateUserReqestBody struct {
 	Phone string `json:"phone"`
 }
 
-func (h handler) UpdateUser(c *fiber.Ctx) error {
+func (h handler) updateUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	body := UpdateUserReqestBody{}
 

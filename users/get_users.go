@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h handler) GetUsers(c *fiber.Ctx) error {
+func (h handler) getUsers(c *fiber.Ctx) error {
 	var users []models.User
 
 	if result := h.DB.Find(&users); result.Error != nil {

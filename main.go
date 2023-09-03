@@ -3,6 +3,7 @@ package main
 import (
 	"go-fiber-api-docker/config"
 	"go-fiber-api-docker/db"
+	"go-fiber-api-docker/reservation"
 	"go-fiber-api-docker/users"
 	"log"
 
@@ -23,7 +24,7 @@ func main() {
 	app.Use(cors.New())
 
 	users.UserRoutes(app, h)
-
+	reservation.ReservationRoutes(app, h)
 	app.Listen(c.Port)
 
 }

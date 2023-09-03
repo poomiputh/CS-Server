@@ -1,11 +1,11 @@
 package models
 
 type User struct {
-	Id      int    `json:"id" gorm:"primarykey"`
-	ID_user int    `json:"id_user"`
-	Fname   string `json:"firstname"`
-	Lname   string `json:"lastname"`
-	Email   string `json:"email"`
-	Phone   string `json:"phone"`
-	Role    string `json:"role"`
+	ID       uint   `json:"id" gorm:"primaryKey"`
+	User_ID  uint   `json:"user_id" gorm:"unique;not null;default: null"`
+	Fname    string `json:"firstname" gorm:"not null;default: null"`
+	Lname    string `json:"lastname" gorm:"not null;default: null"`
+	Email    string `json:"email" gorm:"unique;not null;default: null"`
+	Phone    string `json:"phone" gorm:"unique;not null;default: null"`
+	Position string `json:"position" gorm:"not null;default: null"`
 }

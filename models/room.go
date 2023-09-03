@@ -1,7 +1,7 @@
 package models
 
 type Room struct {
-	Id      int    `json:"id_room" gorm:"primarykey"`
-	Rname   string `json:"roomname"`
-	Rstatus bool   `json:"roomstatus"`
+	ID           uint   `json:"id" gorm:"primaryKey"`
+	Rname        string `json:"roomname" gorm:"unique;not null;default: null"`
+	Rstatus      bool   `json:"roomstatus" gorm:"not null;default: null"`
 }
