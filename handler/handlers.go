@@ -20,7 +20,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	app.Delete("/users/:id", h.deleteUser)
 	app.Post("/reservations", h.addReservation)
 	app.Get("/reservations", h.getReservations)
-	app.Put("/reservations", h.updateReservation)
+	app.Put("/reservations/:id", h.updateReservation)
 	app.Get("/reservations/:id", h.getReservation)
 	app.Delete("/reservations/:id", h.deleteReservation)
 
