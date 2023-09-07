@@ -8,7 +8,7 @@ import (
 
 type ReservationBody struct {
 	RoomID      string `json:"room_id"`
-	UserRefer   uint   `json:"user_refer"`
+	UserRefer   uint   `json:"user_id"`
 	Instructor  string `json:"instructor"`
 	Phone       string `json:"phone"`
 	Description string `json:"description"`
