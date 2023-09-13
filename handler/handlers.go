@@ -15,13 +15,6 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	}
 	app.Post("/users", h.addUser)
 	app.Get("/users", h.getUsers)
-	app.Get("/users/:id", h.getUser)
-	app.Put("/users/:id", h.updateUser)
-	app.Delete("/users/:id", h.deleteUser)
-	app.Post("/reservations", h.addReservation)
-	app.Get("/reservations", h.getReservations)
-	app.Put("/reservations/:id", h.updateReservation)
-	app.Get("/reservations/:id", h.getReservation)
-	app.Delete("/reservations/:id", h.deleteReservation)
-
+	app.Post("/admins", h.addAdmin)
+	app.Get("/admins", h.getAdmin)
 }
