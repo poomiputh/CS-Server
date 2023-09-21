@@ -28,7 +28,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - "./users:/go/src/go-fiber-api-docker/users"
+      - "./:/go/src/go-fiber-api-docker/"
 
 volumes:
   dbdata: # persist database
