@@ -7,12 +7,13 @@ import (
 )
 
 type ReservationTimeBody struct {
-	RoomRefer uint   `json:"id_room"`
-	StartTime string `json:"starttime"`
-	EndTime   string `json:"endtime"`
-	StartDate string `json:"startdate"`
-	EndDate   string `json:"enddate"`
-	Type      string `json:"type"`
+	RoomRefer   uint   `json:"id_room"`
+	StartTime   string `json:"starttime"`
+	EndTime     string `json:"endtime"`
+	StartDate   string `json:"startdate"`
+	EndDate     string `json:"enddate"`
+	Type        string `json:"type"`
+	CourseRefer uint   `json:"id_course"`
 }
 
 func (h handler) AddReservationTime(c *fiber.Ctx) error {
@@ -30,6 +31,7 @@ func (h handler) AddReservationTime(c *fiber.Ctx) error {
 	resertime.StartDate = body.StartDate
 	resertime.EndDate = body.EndDate
 	resertime.Type = body.Type
+	resertime.CourseRefer = body.CourseRefer
 
 	if result := h.DB.Create(&resertime); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
@@ -41,7 +43,7 @@ func (h handler) AddReservationTime(c *fiber.Ctx) error {
 func (h handler) GetReservationTimes(c *fiber.Ctx) error {
 	var ReservationTimes []models.ReservationTime
 
-	if result := h.DB.Find(&ReservationTimes); result.Error != nil {
+	if result := h.DB.Preload("Data_Room").Find(&ReservationTimes); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -52,7 +54,7 @@ func (h handler) GetReservationTime(c *fiber.Ctx) error {
 	reservationtime := c.Params("id")
 	var reservationtimes models.User
 
-	if result := h.DB.Find(&reservationtimes, reservationtime); result.Error != nil {
+	if result := h.DB.Preload("Data_Room").Find(&reservationtimes, reservationtime); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -73,10 +75,25 @@ func (h handler) UpdateReservationTime(c *fiber.Ctx) error {
 	resertime.StartDate = body.StartDate
 	resertime.EndDate = body.EndDate
 	resertime.Type = body.Type
+	resertime.CourseRefer = body.CourseRefer
 
 	if result := h.DB.First(&resertime, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 	h.DB.Save(&resertime)
 	return c.Status(fiber.StatusOK).JSON(&resertime)
+}
+
+func (h handler) DeleteReservationTime(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	var ReservationTimes models.ReservationTime
+
+	if result := h.DB.First(&ReservationTimes, id); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	h.DB.Delete(&id)
+
+	return c.SendStatus(fiber.StatusOK)
 }
