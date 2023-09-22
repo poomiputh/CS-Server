@@ -8,12 +8,12 @@ import (
 
 type ReservationTimeBody struct {
 	RoomRefer   uint   `json:"id_room"`
+	CourseRefer uint   `json:"id_course"`
 	StartTime   string `json:"starttime"`
 	EndTime     string `json:"endtime"`
 	StartDate   string `json:"startdate"`
 	EndDate     string `json:"enddate"`
 	Type        string `json:"type"`
-	CourseRefer uint   `json:"id_course"`
 }
 
 func (h handler) AddReservationTime(c *fiber.Ctx) error {
@@ -25,13 +25,13 @@ func (h handler) AddReservationTime(c *fiber.Ctx) error {
 
 	var resertime models.ReservationTime
 	resertime.RoomRefer = body.RoomRefer
+	resertime.CourseRefer = body.CourseRefer
 	resertime.StartTime = body.StartTime
 	resertime.EndTime = body.EndTime
 	resertime.EndTime = body.EndTime
 	resertime.StartDate = body.StartDate
 	resertime.EndDate = body.EndDate
 	resertime.Type = body.Type
-	resertime.CourseRefer = body.CourseRefer
 
 	if result := h.DB.Create(&resertime); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
