@@ -7,14 +7,14 @@ import (
 )
 
 type RequestBody struct {
-	Room_ID       string `json:"id_room"`
-	UserRefer     uint   `json:"id_user"`
-	AdminRefer    uint   `json:"id_admin"`
+	Room_ID       string `json:"room_id"`
+	UserRefer     uint   `json:"user_refer"`
+	AdminRefer    uint   `json:"admin_refer"`
 	Instructor    string `json:"instructor"`
-	StartTime     string `json:"starttime"`
-	EndTime       string `json:"endtime"`
+	StartTime     string `json:"start_time"`
+	EndTime       string `json:"end_time"`
 	Date          string `json:"date"`
-	ReDescription string `json:"requestdescription"`
+	ReDescription string `json:"request_description"`
 	Status        string `json:"status"`
 }
 
@@ -102,7 +102,7 @@ func (h handler) DeleteRequest(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	h.DB.Delete(&id)
+	h.DB.Delete(&Requests)
 
 	return c.SendStatus(fiber.StatusOK)
 }

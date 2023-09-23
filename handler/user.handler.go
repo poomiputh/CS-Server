@@ -9,8 +9,8 @@ import (
 type UserBody struct {
 	User_ID uint   `json:"user_id"`
 	Email   string `json:"email" `
-	Fname   string `json:"firstname"`
-	Lname   string `json:"lastname"`
+	Fname   string `json:"first_name"`
+	Lname   string `json:"last_name"`
 	Phone   string `json:"phone"`
 	Role    string `json:"role"`
 }
@@ -58,4 +58,16 @@ func (h handler) GetUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&users)
 }
 
+func (h handler) DeleteUser(c *fiber.Ctx) error {
+	id := c.Params("id")
 
+	var user models.User
+
+	if result := h.DB.First(&user, id); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	h.DB.Delete(&user)
+
+	return c.SendStatus(fiber.StatusOK)
+}

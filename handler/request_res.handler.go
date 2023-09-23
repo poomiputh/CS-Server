@@ -4,11 +4,12 @@ import (
 	"go-fiber-api-docker/models"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm/clause"
 )
 
 type Request_ResBody struct {
-	RequestRefer         uint `json:"id_request"`
-	ReservationTimeRefer uint `json:"id_reservationtime"`
+	RequestRefer         uint `json:"request_refer"`
+	ReservationTimeRefer uint `json:"reservationTime_refer"`
 }
 
 func (h handler) AddRequest_Res(c *fiber.Ctx) error {
@@ -32,7 +33,7 @@ func (h handler) AddRequest_Res(c *fiber.Ctx) error {
 func (h handler) GetRequest_Res(c *fiber.Ctx) error {
 	var Requests_Res []models.Request_Res
 
-	if result := h.DB.Preload("Data_Request").Preload("Data_ReservationTime").Preload("Data_User").Preload("Data_Admin").Find(&Requests_Res); result.Error != nil {
+	if result := h.DB.Preload(clause.Associations).Find(&Requests_Res); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 

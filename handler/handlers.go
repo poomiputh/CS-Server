@@ -1,6 +1,7 @@
 package handler
 
 import (
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -14,9 +15,16 @@ func Routes(app *fiber.App, db *gorm.DB) {
 		DB: db,
 	}
 
+	app.Post("/login", h.Login)
+
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
+	}))
+
 	app.Post("/users", h.AddUser)
 	app.Get("/users", h.GetUsers)
 	app.Get("/users/:id", h.GetUser)
+	app.Delete("/users/:id", h.DeleteUser)
 
 	app.Post("/requests", h.AddRequest)
 	app.Get("/requests", h.GetRequests)
@@ -28,12 +36,13 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	app.Get("/courses", h.GetCourses)
 	app.Get("/courses/:id", h.GetCourse)
 	app.Put("/courses/:id", h.UpdateCourse)
-	app.Delete("/requests/:id", h.DeleteCourse)
+	app.Delete("/courses/:id", h.DeleteCourse)
 
 	app.Post("/reservationtimes", h.AddReservationTime)
 	app.Get("/reservationtimes", h.GetReservationTimes)
-	app.Put("/reservationtimes/:id", h.GetReservationTime)
-	app.Delete("/requests/:id", h.DeleteReservationTime)
+	app.Get("/reservationtimes/:id", h.GetReservationTime)
+	app.Put("/reservationtimes/:id", h.UpdateReservationTime)
+	app.Delete("/reservationtimes/:id", h.DeleteReservationTime)
 
 	app.Post("/requests_res", h.AddRequest_Res)
 	app.Get("/requests_res", h.GetRequest_Res)

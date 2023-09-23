@@ -8,8 +8,8 @@ import (
 
 type CourseBody struct {
 	CourseID          uint   `json:"course_id"`
-	CourseName        string `json:"coursename"`
-	CourseDescription string `json:"coursedescription"`
+	CourseName        string `json:"course_name"`
+	CourseDescription string `json:"course_description"`
 	Type              string `json:"type"`
 	DayofWeek         string `json:"dayofweek"`
 }
@@ -38,7 +38,7 @@ func (h handler) AddCourse(c *fiber.Ctx) error {
 func (h handler) GetCourses(c *fiber.Ctx) error {
 	var Courses []models.Course
 
-	if result := h.DB.Preload("Data_Reservationtime").Find(&Courses); result.Error != nil {
+	if result := h.DB.Preload("ReservationTime").Find(&Courses); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -48,7 +48,7 @@ func (h handler) GetCourse(c *fiber.Ctx) error {
 	course := c.Params("id")
 	var courses models.Course
 
-	if result := h.DB.Preload("Data_Reservationtime").Find(&courses, course); result.Error != nil {
+	if result := h.DB.Preload("ReservationTime").Find(&courses, course); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
