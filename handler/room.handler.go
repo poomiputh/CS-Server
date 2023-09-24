@@ -7,7 +7,7 @@ import (
 )
 
 type Room struct {
-	RoomID uint `json:"room_id"`
+	RoomID string `json:"room_id"`
 }
 
 func (h handler) AddRoom(c *fiber.Ctx) error {

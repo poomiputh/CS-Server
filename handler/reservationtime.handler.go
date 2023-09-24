@@ -8,7 +8,7 @@ import (
 )
 
 type ReservationTimeBody struct {
-	RoomRefer   uint   `json:"room_refer"`
+	RoomRefer   string   `json:"room_refer"`
 	CourseRefer uint   `json:"course_refer"`
 	StartTime   string `json:"start_time"`
 	EndTime     string `json:"end_time"`
