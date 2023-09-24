@@ -4,6 +4,7 @@ import (
 	"go-fiber-api-docker/models"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm/clause"
 )
 
 type ReservationTimeBody struct {
@@ -43,7 +44,7 @@ func (h handler) AddReservationTime(c *fiber.Ctx) error {
 func (h handler) GetReservationTimes(c *fiber.Ctx) error {
 	var ReservationTimes []models.ReservationTime
 
-	if result := h.DB.Find(&ReservationTimes); result.Error != nil {
+	if result := h.DB.Preload(clause.Associations).Find(&ReservationTimes); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -54,7 +55,7 @@ func (h handler) GetReservationTime(c *fiber.Ctx) error {
 	reservationtime := c.Params("id")
 	var reservationtimes models.ReservationTime
 
-	if result := h.DB.Find(&reservationtimes, reservationtime); result.Error != nil {
+	if result := h.DB.Preload(clause.Associations).Find(&reservationtimes, reservationtime); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 

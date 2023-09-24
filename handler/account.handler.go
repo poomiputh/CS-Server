@@ -26,13 +26,14 @@ func (h handler) Login(c *fiber.Ctx) error {
 	}
 
 	// Throws Unauthorized error
-	if users.Fname != login_pass {
+	if users.Password != login_pass {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid password")
 	}
 
 	// Create the Claims
 	claims := jwt.MapClaims{
-		"college_id": users.User_ID,
+		"id":         users.ID,
+		"college_id": users.CollegeID,
 		"first_name": users.Fname,
 		"last_name":  users.Lname,
 		"email":      users.Email,

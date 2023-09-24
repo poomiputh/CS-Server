@@ -7,7 +7,7 @@ import (
 )
 
 type Room struct {
-	Room_ID uint `json:"room_id"`
+	RoomID uint `json:"room_id"`
 }
 
 func (h handler) AddRoom(c *fiber.Ctx) error {
@@ -18,7 +18,7 @@ func (h handler) AddRoom(c *fiber.Ctx) error {
 	}
 
 	var room models.Room
-	room.Room_ID = body.Room_ID
+	room.RoomID = body.RoomID
 
 	if result := h.DB.Create(&room); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
@@ -30,7 +30,7 @@ func (h handler) AddRoom(c *fiber.Ctx) error {
 func (h handler) GetRooms(c *fiber.Ctx) error {
 	var Room []models.Room
 
-	if result := h.DB.Preload("Data_Reservation").Find(&Room); result.Error != nil {
+	if result := h.DB.Preload("DataReservation").Find(&Room); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 

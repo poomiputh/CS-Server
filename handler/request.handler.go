@@ -4,10 +4,11 @@ import (
 	"go-fiber-api-docker/models"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm/clause"
 )
 
 type RequestBody struct {
-	Room_ID       string `json:"room_id"`
+	RoomID       string `json:"room_id"`
 	UserRefer     uint   `json:"user_refer"`
 	AdminRefer    uint   `json:"admin_refer"`
 	Instructor    string `json:"instructor"`
@@ -26,7 +27,7 @@ func (h handler) AddRequest(c *fiber.Ctx) error {
 	}
 
 	var request models.Request
-	request.Room_ID = body.Room_ID
+	request.RoomID = body.RoomID
 	request.UserRefer = body.UserRefer
 	request.AdminRefer = body.AdminRefer
 	request.Instructor = body.Instructor
@@ -46,7 +47,7 @@ func (h handler) AddRequest(c *fiber.Ctx) error {
 func (h handler) GetRequests(c *fiber.Ctx) error {
 	var Requests []models.Request
 
-	if result := h.DB.Preload("Data_User").Preload("Data_Admin").Find(&Requests); result.Error != nil {
+	if result := h.DB.Preload(clause.Associations).Find(&Requests); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -57,7 +58,7 @@ func (h handler) GetRequest(c *fiber.Ctx) error {
 	request := c.Params("id")
 	var requests models.Request
 
-	if result := h.DB.Preload("Data_User").Preload("Data_Admin").Find(&requests, request); result.Error != nil {
+	if result := h.DB.Preload(clause.Associations).Find(&requests, request); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -78,7 +79,7 @@ func (h handler) UpdateRequest(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	request.Room_ID = body.Room_ID
+	request.RoomID = body.RoomID
 	request.UserRefer = body.UserRefer
 	request.AdminRefer = body.AdminRefer
 	request.Instructor = body.Instructor
