@@ -20,14 +20,11 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	app.Get("/users", h.GetUsers)
 	app.Get("/users/:id", h.GetUser)
 
-	app.Get("/requests_res", h.GetRequest_Res)
-	app.Get("/requests", h.GetRequests)
-	app.Get("/courses", h.GetCourses)
-	app.Get("/requests/:id", h.GetRequest)
-	app.Get("/courses/:id", h.GetCourse)
 	app.Get("/reservationtimes/:id", h.GetReservationTime)
 	app.Get("/reservationtimes", h.GetReservationTimes)
+	
 	app.Get("/rooms", h.GetRooms)
+
 	app.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
 	}))
@@ -35,22 +32,9 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	app.Post("/users", h.AddUser)
 	app.Delete("/users/:id", h.DeleteUser)
 
-	app.Post("/requests", h.AddRequest)
-
-	app.Put("/requests/:id", h.UpdateRequest)
-	app.Delete("/requests/:id", h.DeleteRequest)
-
-	app.Post("/courses", h.AddCourse)
-
-	app.Put("/courses/:id", h.UpdateCourse)
-	app.Delete("/courses/:id", h.DeleteCourse)
-
 	app.Post("/reservationtimes", h.AddReservationTime)
-
 	app.Put("/reservationtimes/:id", h.UpdateReservationTime)
 	app.Delete("/reservationtimes/:id", h.DeleteReservationTime)
-
-	app.Post("/requests_res", h.AddRequest_Res)
 
 	app.Post("/rooms", h.AddRoom)
 

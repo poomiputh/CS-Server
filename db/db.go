@@ -19,11 +19,8 @@ func Init(c *config.Config) *gorm.DB {
 	}
 
 	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.Request{})
-	db.AutoMigrate(&models.RequestReservation{})
 	db.AutoMigrate(&models.ReservationTime{})
 	db.AutoMigrate(&models.Room{})
-	db.AutoMigrate(&models.Course{})
 
 	return db
 }
