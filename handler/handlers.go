@@ -32,7 +32,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 
 	// https://localhost:3000/api/reservations/add
 	// https://localhost:3000/api/reservations/delete/1
-	reservations := api.Group("/tests")
+	reservations := api.Group("/reservations")
 	reservations.Post("/add", h.AddReservation)
 	reservations.Delete("/delete_course/:course_id/:course_type", h.DeleteCourseReservations)
 	reservations.Delete("/delete/:id", h.DeleteReservation)
