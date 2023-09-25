@@ -30,8 +30,8 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	rooms.Post("/add", h.AddRoom)
 	rooms.Get("/list", h.GetRooms)
 
-	// https://localhost:3000/api/reservations/add
-	// https://localhost:3000/api/reservations/delete/1
+	// http://localhost:3000/api/reservations/add
+	// http://localhost:3000/api/reservations/delete/1
 	reservations := api.Group("/reservations")
 	reservations.Post("/add", h.AddReservation)
 	reservations.Delete("/delete_course/:course_id/:course_type", h.DeleteCourseReservations)
