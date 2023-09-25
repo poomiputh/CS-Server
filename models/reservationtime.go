@@ -10,7 +10,7 @@ type ReservationTime struct {
 	CourseType  string `json:"course_type" gorm:"default: null"`
 	Instructor  string `json:"instructor" gorm:"default: null"`
 	DayOfWeek   string `json:"dayofweek" gorm:"default: null"`
-	Description string `json:"request_description" gorm:"default: null"`
+	Description string `json:"description" gorm:"default: null"`
 	StartTime   string `json:"start_time" gorm:"not null;default: null"`
 	EndTime     string `json:"end_time" gorm:"not null;default: null"`
 	Date        string `json:"date" gorm:"not null;default: null"`

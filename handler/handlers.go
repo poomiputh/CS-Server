@@ -15,30 +15,35 @@ func Routes(app *fiber.App, db *gorm.DB) {
 		DB: db,
 	}
 
-	app.Post("/login", h.Login)
+	api := app.Group("/api")
 
-	app.Get("/users", h.GetUsers)
-	app.Get("/users/:id", h.GetUser)
+	login := api.Group("/login")
+	login.Post("/", h.Login)
 
-	app.Get("/reservationtimes/:id", h.GetReservationTime)
-	app.Get("/reservationtimes", h.GetReservationTimes)
-	
-	app.Get("/rooms", h.GetRooms)
+	users := api.Group("/users")
+	users.Post("/add", h.AddUser)
+	users.Delete("/delete/:id", h.DeleteUser)
+	users.Get("/list", h.GetUsers)
+	users.Get("/get/:id", h.GetUser)
 
-	app.Post("/users", h.AddUser)
-	app.Delete("/users/:id", h.DeleteUser)
+	rooms := api.Group("/rooms")
+	rooms.Post("/add", h.AddRoom)
+	rooms.Get("/list", h.GetRooms)
 
-	app.Post("/reservationtimes", h.AddReservationTime)
-	app.Post("/reservationtimes/:is_series", h.AddReservationTimeSeries)
-	app.Put("/reservationtimes/:id", h.UpdateReservationTime)
-	app.Delete("/reservationtimes/:id", h.DeleteReservationTime)
-
-	app.Post("/rooms", h.AddRoom)
+	// https://localhost:3000/api/reservations/add
+	// https://localhost:3000/api/reservations/delete/1
+	reservations := api.Group("/tests")
+	reservations.Post("/add", h.AddReservation)
+	reservations.Delete("/delete_course/:course_id/:course_type", h.DeleteCourseReservations)
+	reservations.Delete("/delete/:id", h.DeleteReservation)
+	reservations.Get("/get/:id", h.GetReservation)
+	reservations.Get("/list", h.GetAllReservations)
+	reservations.Get("/list/:type", h.GetAllReservationsByType)
+	reservations.Get("get_course/:course_id/:course_type", h.GetCourseReservations)
+	reservations.Put("/reservationtimes/:id", h.UpdateReservation)
 
 	app.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
 	}))
-
-	
 
 }

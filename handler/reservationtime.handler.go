@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"fmt"
 	"go-fiber-api-docker/models"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,22 +11,25 @@ import (
 
 type ReservationTimeBody struct {
 	UserRefer   uint   `json:"user_refer"`
-	AdminRefer  uint   `json:"admin_refer"` // Can Null
+	AdminRefer  uint   `json:"admin_refer"`
 	RoomRefer   string `json:"room_refer"`
-	CourseID    uint   `json:"course_id"`           // Can Null
-	CourseName  string `json:"course_name"`         // Can Null
-	CourseType  string `json:"course_type"`         // Can Null
-	Instructor  string `json:"instructor"`          // Can Null
-	DayOfWeek   string `json:"dayofweek"`           // Can Null
-	Description string `json:"request_description"` // Can Null
+	CourseID    uint   `json:"course_id"`
+	CourseName  string `json:"course_name"`
+	CourseType  string `json:"course_type"`
+	Instructor  string `json:"instructor"`
+	DayOfWeek   string `json:"dayofweek"`
+	Description string `json:"description"`
 	StartTime   string `json:"start_time"`
 	EndTime     string `json:"end_time"`
 	Date        string `json:"date"`
+	EndDate     string `json:"end_date"` // ใช้เฉพาะตอนเพิ่ม Course เป็นชุด, ไม่ใช้ตั้งเป็น null
 	Type        string `json:"type"`
 	Status      string `json:"status"`
 }
 
-func (h handler) AddReservationTime(c *fiber.Ctx) error {
+// สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
+func (h handler) AddReservation(c *fiber.Ctx) error {
+
 	body := ReservationTimeBody{}
 
 	if err := c.BodyParser(&body); err != nil {
@@ -44,18 +48,115 @@ func (h handler) AddReservationTime(c *fiber.Ctx) error {
 	res_time.Description = body.Description
 	res_time.StartTime = body.StartTime
 	res_time.EndTime = body.EndTime
-	res_time.Date = body.Date
 	res_time.Type = body.Type
 	res_time.Status = body.Status
 
-	if result := h.DB.Create(&res_time); result.Error != nil {
+	var reservation_times []models.ReservationTime
+
+	date_format := "02-01-2006"
+
+	if body.EndDate != "" {
+		start_date_str := body.Date
+		start_date, err := time.Parse(date_format, start_date_str)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		stop_date_str := body.EndDate
+		stop_date, err := time.Parse(date_format, stop_date_str)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		batch_reservations := []models.ReservationTime{}
+
+		day_split := strings.Split(body.DayOfWeek, ",")
+
+		for date := start_date; date.Before(stop_date); date = date.AddDate(0, 0, 1) {
+			if date.Weekday() == time.Monday && slices.Contains(day_split, "1") {
+				res_time.Date = date.Format(date_format)
+				batch_reservations = append(batch_reservations, res_time)
+			}
+			if date.Weekday() == time.Tuesday && slices.Contains(day_split, "2") {
+				res_time.Date = date.Format(date_format)
+				batch_reservations = append(batch_reservations, res_time)
+			}
+			if date.Weekday() == time.Wednesday && slices.Contains(day_split, "3") {
+				res_time.Date = date.Format(date_format)
+				batch_reservations = append(batch_reservations, res_time)
+			}
+			if date.Weekday() == time.Thursday && slices.Contains(day_split, "4") {
+				res_time.Date = date.Format(date_format)
+				batch_reservations = append(batch_reservations, res_time)
+			}
+			if date.Weekday() == time.Friday && slices.Contains(day_split, "5") {
+				res_time.Date = date.Format(date_format)
+				batch_reservations = append(batch_reservations, res_time)
+			}
+		}
+
+		if result := h.DB.Create(&batch_reservations); result.Error != nil {
+			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+		}
+
+		reservation_times = batch_reservations
+	} else {
+		res_time.Date = body.Date
+		if result := h.DB.Create(&res_time); result.Error != nil {
+			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+		}
+
+		reservation_times = append(reservation_times, res_time)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&reservation_times)
+}
+
+// สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
+func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
+	del_course_id := c.Params("course_id")
+	del_course_type := c.Params("course_type")
+
+	var reservation_times []models.ReservationTime
+
+	if result := h.DB.Where("course_id = ? AND course_type = ?", del_course_id, del_course_type).Find(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(&res_time)
+	h.DB.Delete(&reservation_times)
+
+	return c.SendStatus(fiber.StatusOK)
 }
 
-func (h handler) GetReservationTimes(c *fiber.Ctx) error {
+// สำหรับลบ Reservation แบบเดี่ยว
+func (h handler) DeleteReservation(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	var ReservationTimes models.ReservationTime
+
+	if result := h.DB.First(&ReservationTimes, id); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	h.DB.Delete(&ReservationTimes)
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+// สำหรับดึงค่า Reservation แบบเดี่ยว
+func (h handler) GetReservation(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var reservation_times models.ReservationTime
+
+	if result := h.DB.First(&reservation_times, id); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&reservation_times)
+}
+
+// สำหรับดึงค่า Reservation ทั้งหมด
+func (h handler) GetAllReservations(c *fiber.Ctx) error {
 	var ReservationTimes []models.ReservationTime
 
 	if result := h.DB.Find(&ReservationTimes); result.Error != nil {
@@ -65,18 +166,34 @@ func (h handler) GetReservationTimes(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&ReservationTimes)
 }
 
-func (h handler) GetReservationTime(c *fiber.Ctx) error {
-	reservationtime := c.Params("id")
-	var reservationtimes models.ReservationTime
+// สำหรับดึงค่า Reservation ทั้งหมดที่มี Type ที่ต้องการ
+func (h handler) GetAllReservationsByType(c *fiber.Ctx) error {
+	reservation_type := c.Params("type")
 
-	if result := h.DB.Find(&reservationtimes, reservationtime); result.Error != nil {
+	var filtered_reservation_times []models.ReservationTime
+
+	if result := h.DB.Where("type = ?", reservation_type).Find(&filtered_reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(&reservationtimes)
+	return c.Status(fiber.StatusOK).JSON(&filtered_reservation_times)
 }
 
-func (h handler) UpdateReservationTime(c *fiber.Ctx) error {
+// สำหรับดึงค่า Course ทั้งชุด
+func (h handler) GetCourseReservations(c *fiber.Ctx) error {
+	course_id := c.Params("course_id")
+	course_type := c.Params("course_type")
+
+	var reservation_times []models.ReservationTime
+
+	if result := h.DB.Where("course_id = ? AND course_type = ?", course_id, course_type).Find(&reservation_times); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&reservation_times)
+}
+
+func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	body := ReservationTimeBody{}
 	if err := c.BodyParser(&body); err != nil {
@@ -103,69 +220,4 @@ func (h handler) UpdateReservationTime(c *fiber.Ctx) error {
 	}
 	h.DB.Save(&res_time)
 	return c.Status(fiber.StatusOK).JSON(&res_time)
-}
-
-func (h handler) DeleteReservationTime(c *fiber.Ctx) error {
-	id := c.Params("id")
-
-	var ReservationTimes models.ReservationTime
-
-	if result := h.DB.First(&ReservationTimes, id); result.Error != nil {
-		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
-	}
-
-	h.DB.Delete(&ReservationTimes)
-
-	return c.SendStatus(fiber.StatusOK)
-}
-
-func (h handler) AddReservationTimeSeries(c *fiber.Ctx) error {
-
-	stopDate := c.Params("stop_date")
-
-	body := ReservationTimeBody{}
-
-	if err := c.BodyParser(&body); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
-
-	// startDate := body.Date
-	startDateTest := time.Now()
-	stopDateTest := time.Now().AddDate(0, 0, 30)
-
-	var res_time models.ReservationTime
-	res_time.UserRefer = body.UserRefer
-	res_time.AdminRefer = body.AdminRefer
-	res_time.RoomRefer = body.RoomRefer
-	res_time.CourseID = body.CourseID
-	res_time.CourseName = body.CourseName
-	res_time.CourseType = body.CourseType
-	res_time.Instructor = body.Instructor
-	res_time.DayOfWeek = body.DayOfWeek
-	res_time.Description = body.Description
-	res_time.StartTime = body.StartTime
-	res_time.EndTime = body.EndTime
-	res_time.Type = body.Type
-	res_time.Status = body.Status
-
-	for date := startDateTest; date.Before(stopDateTest); date = date.AddDate(0, 0, 1) {
-		if date.Weekday() == time.Monday {
-
-			res_time.Date = date.Format("2006-01-02")
-
-			if result := h.DB.Create(&res_time); result.Error != nil {
-				return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
-			}
-
-			fmt.Printf("Inserted record for %s\n", date.Format("2006-01-02"))
-		}
-	}
-
-	var result []models.ReservationTime
-
-	if result := h.DB.Where("CourseID = ? AND CourseType = ?", res.CourseID, res.CourseType).Find(&ReservationTimes); result.Error != nil {
-		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
-	}
-
-	return c.Status(fiber.StatusOK).JSON(&result)
 }
