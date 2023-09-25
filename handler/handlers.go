@@ -25,17 +25,20 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	
 	app.Get("/rooms", h.GetRooms)
 
-	app.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
-	}))
-
 	app.Post("/users", h.AddUser)
 	app.Delete("/users/:id", h.DeleteUser)
 
 	app.Post("/reservationtimes", h.AddReservationTime)
+	app.Post("/reservationtimes/:is_series", h.AddReservationTimeSeries)
 	app.Put("/reservationtimes/:id", h.UpdateReservationTime)
 	app.Delete("/reservationtimes/:id", h.DeleteReservationTime)
 
 	app.Post("/rooms", h.AddRoom)
+
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
+	}))
+
+	
 
 }

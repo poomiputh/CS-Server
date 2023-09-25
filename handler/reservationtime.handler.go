@@ -121,10 +121,17 @@ func (h handler) DeleteReservationTime(c *fiber.Ctx) error {
 
 func (h handler) AddReservationTimeSeries(c *fiber.Ctx) error {
 
-	startDate := time.Now()
-	stopDate := time.Now().AddDate(0, 0, 30)
+	stopDate := c.Params("stop_date")
 
 	body := ReservationTimeBody{}
+
+	if err := c.BodyParser(&body); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	// startDate := body.Date
+	startDateTest := time.Now()
+	stopDateTest := time.Now().AddDate(0, 0, 30)
 
 	var res_time models.ReservationTime
 	res_time.UserRefer = body.UserRefer
@@ -141,7 +148,7 @@ func (h handler) AddReservationTimeSeries(c *fiber.Ctx) error {
 	res_time.Type = body.Type
 	res_time.Status = body.Status
 
-	for date := startDate; date.Before(stopDate); date = date.AddDate(0, 0, 1) {
+	for date := startDateTest; date.Before(stopDateTest); date = date.AddDate(0, 0, 1) {
 		if date.Weekday() == time.Monday {
 
 			res_time.Date = date.Format("2006-01-02")
@@ -154,5 +161,11 @@ func (h handler) AddReservationTimeSeries(c *fiber.Ctx) error {
 		}
 	}
 
-	return nil
+	var result []models.ReservationTime
+
+	if result := h.DB.Where("CourseID = ? AND CourseType = ?", res.CourseID, res.CourseType).Find(&ReservationTimes); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&result)
 }

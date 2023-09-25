@@ -2,5 +2,5 @@ package models
 
 type Room struct {
 	RoomID          string              `json:"room_id" gorm:"primaryKey"`
-	DataReservation []ReservationTime `json:"data_reservationtime" gorm:"foreignKey:RoomRefer; references:Room_ID"`
+	DataReservation []ReservationTime `json:"data_reservationtime" gorm:"foreignKey:RoomRefer; references:RoomID"`
 }
