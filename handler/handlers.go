@@ -40,7 +40,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	reservations.Get("/list", h.GetAllReservations)
 	reservations.Get("/list/:type", h.GetAllReservationsByType)
 	reservations.Get("get_course/:course_id/:course_type", h.GetCourseReservations)
-	reservations.Put("/reservationtimes/:id", h.UpdateReservation)
+	reservations.Put("/update/:id", h.UpdateReservation)
 
 	app.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
