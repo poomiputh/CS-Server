@@ -119,11 +119,12 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
 func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
 	del_course_id := c.Params("course_id")
+	del_course_section := c.Params("course_section")
 	del_course_type := c.Params("course_type")
 
 	var reservation_times []models.ReservationTime
 
-	if result := h.DB.Where("course_id = ? AND course_type = ?", del_course_id, del_course_type).Find(&reservation_times); result.Error != nil {
+	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ?", del_course_id, del_course_type, del_course_section).Find(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
