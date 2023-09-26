@@ -20,10 +20,11 @@ type ReservationTimeBody struct {
 	CourseInstructor      string `json:"course_instructor"`
 	CourseInstructorEmail string `json:"course_instructor_email"`
 	DayOfWeek             string `json:"day_of_week"`
+	LeadReservation       uint   `json:"lead_reservation" gorm:"default: null"`
 	Description           string `json:"description"`
 	StartTime             string `json:"start_time"`
 	EndTime               string `json:"end_time"`
-	Date                  string `json:"date"`
+	StartDate             string `json:"start_date"`
 	EndDate               string `json:"end_date"` // ใช้เฉพาะตอนเพิ่ม Course เป็นชุด, ไม่ใช้ตั้งเป็น null
 	Type                  string `json:"type"`
 	Status                string `json:"status"`
@@ -38,29 +39,35 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	var res_time models.ReservationTime
-	res_time.UserRefer = body.UserRefer
-	res_time.AdminRefer = body.AdminRefer
-	res_time.RoomRefer = body.RoomRefer
-	res_time.CourseID = body.CourseID
-	res_time.CourseSection = body.CourseSection
-	res_time.CourseName = body.CourseName
-	res_time.CourseType = body.CourseType
-	res_time.CourseInstructor = body.CourseInstructor
-	res_time.CourseInstructorEmail = body.CourseInstructorEmail
-	res_time.DayOfWeek = body.DayOfWeek
-	res_time.Description = body.Description
-	res_time.StartTime = body.StartTime
-	res_time.EndTime = body.EndTime
-	res_time.Type = body.Type
-	res_time.Status = body.Status
+	var lead_res_time = models.ReservationTime{
+		UserRefer:             body.UserRefer,
+		AdminRefer:            body.AdminRefer,
+		RoomRefer:             body.RoomRefer,
+		CourseID:              body.CourseID,
+		CourseSection:         body.CourseSection,
+		CourseName:            body.CourseName,
+		CourseType:            body.CourseType,
+		CourseInstructor:      body.CourseInstructor,
+		CourseInstructorEmail: body.CourseInstructorEmail,
+		DayOfWeek:             body.DayOfWeek,
+		LeadReservation:       body.LeadReservation,
+		Description:           body.Description,
+		StartTime:             body.StartTime,
+		EndTime:               body.EndTime,
+		StartDate:             body.StartDate,
+		EndDate:               body.EndDate,
+		Type:                  body.Type,
+		Status:                body.Status,
+	}
 
-	var reservation_times []models.ReservationTime
+	if result := h.DB.Create(&lead_res_time); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
 
 	date_format := "02-01-2006"
 
 	if body.EndDate != "" {
-		start_date_str := body.Date
+		start_date_str := body.StartDate
 		start_date, err := time.Parse(date_format, start_date_str)
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
@@ -72,51 +79,72 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		batch_reservations := []models.ReservationTime{}
+		batch_trail_reservations := []models.ReservationTime{}
 
 		day_split := strings.Split(body.DayOfWeek, ",")
 
 		for date := start_date; date.Before(stop_date); date = date.AddDate(0, 0, 1) {
+
+			var trail_res_time = models.ReservationTime{
+				UserRefer:             body.UserRefer,
+				AdminRefer:            body.AdminRefer,
+				RoomRefer:             body.RoomRefer,
+				CourseID:              body.CourseID,
+				CourseSection:         body.CourseSection,
+				CourseName:            body.CourseName,
+				CourseType:            body.CourseType,
+				CourseInstructor:      body.CourseInstructor,
+				CourseInstructorEmail: body.CourseInstructorEmail,
+				DayOfWeek:             body.DayOfWeek,
+				LeadReservation:       lead_res_time.ID,
+				Description:           body.Description,
+				StartTime:             body.StartTime,
+				EndTime:               body.EndTime,
+				EndDate:               body.EndDate,
+				Type:                  body.Type,
+				Status:                body.Status,
+			}
+
 			if date.Weekday() == time.Monday && slices.Contains(day_split, "1") {
-				res_time.Date = date.Format(date_format)
-				batch_reservations = append(batch_reservations, res_time)
+				trail_res_time.StartDate = date.Format(date_format)
+				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
 			}
 			if date.Weekday() == time.Tuesday && slices.Contains(day_split, "2") {
-				res_time.Date = date.Format(date_format)
-				batch_reservations = append(batch_reservations, res_time)
+				trail_res_time.StartDate = date.Format(date_format)
+				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
 			}
 			if date.Weekday() == time.Wednesday && slices.Contains(day_split, "3") {
-				res_time.Date = date.Format(date_format)
-				batch_reservations = append(batch_reservations, res_time)
+				trail_res_time.StartDate = date.Format(date_format)
+				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
 			}
 			if date.Weekday() == time.Thursday && slices.Contains(day_split, "4") {
-				res_time.Date = date.Format(date_format)
-				batch_reservations = append(batch_reservations, res_time)
+				trail_res_time.StartDate = date.Format(date_format)
+				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
 			}
 			if date.Weekday() == time.Friday && slices.Contains(day_split, "5") {
-				res_time.Date = date.Format(date_format)
-				batch_reservations = append(batch_reservations, res_time)
+				trail_res_time.StartDate = date.Format(date_format)
+				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
 			}
 		}
 
-		if result := h.DB.Create(&batch_reservations); result.Error != nil {
+		batch_trail_reservations = batch_trail_reservations[1:]
+		if result := h.DB.Create(&batch_trail_reservations); result.Error != nil {
 			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 		}
 
-		reservation_times = batch_reservations
-	} else {
-		res_time.Date = body.Date
-		if result := h.DB.Create(&res_time); result.Error != nil {
-			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
-		}
-
-		reservation_times = append(reservation_times, res_time)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(&reservation_times)
+	var result_reservation models.ReservationTime
+
+	if result := h.DB.Preload("TrailReservations").First(&result_reservation, lead_res_time.ID); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(&result_reservation)
 }
 
 // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
+// Needed update
 func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
 	del_course_id := c.Params("course_id")
 	del_course_section := c.Params("course_section")
@@ -206,6 +234,7 @@ func (h handler) GetAllReservationsByFilter(c *fiber.Ctx) error {
 }
 
 // สำหรับดึงค่า Course ทั้งชุด
+// Needed update
 func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 	course_id := c.Params("course_id")
 	course_section := c.Params("course_section")
@@ -220,6 +249,7 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&reservation_times)
 }
 
+// Needed update
 func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	body := ReservationTimeBody{}
@@ -240,7 +270,7 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	res_time.Description = body.Description
 	res_time.StartTime = body.StartTime
 	res_time.EndTime = body.EndTime
-	res_time.Date = body.Date
+	res_time.StartDate = body.StartDate
 	res_time.Type = body.Type
 	res_time.Status = body.Status
 
