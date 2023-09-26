@@ -33,10 +33,10 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	// http://localhost:3000/api/reservations/add
 	// http://localhost:3000/api/reservations/delete/1
 	reservations := api.Group("/reservations")
-	reservations.Post("/add", h.AddReservation)                                               // สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
-	reservations.Delete("/delete_course/:course_id/:course_type", h.DeleteCourseReservations) // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
-	reservations.Delete("/delete/:id", h.DeleteReservation)                                   // สำหรับลบ Reservation แบบเดี่ยว
-	reservations.Get("/get/:id", h.GetReservation)                                            // สำหรับดึงค่า Reservation แบบเดี่ยว
+	reservations.Post("/add", h.AddReservation)                                                               // สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
+	reservations.Delete("/delete_course/:course_id/:course_section/:course_type", h.DeleteCourseReservations) // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
+	reservations.Delete("/delete/:id", h.DeleteReservation)                                                   // สำหรับลบ Reservation แบบเดี่ยว
+	reservations.Get("/get/:id", h.GetReservation)                                                            // สำหรับดึงค่า Reservation แบบเดี่ยว
 	// reservations.Get("/list", h.GetAllReservations)
 	reservations.Get("/list/:type?/:status?", h.GetAllReservationsByFilter)         // สำหรับดึงค่า Reservation ทั้งหมด หรือทั้งหมดที่มี Type และ Status ที่ต้องการ
 	reservations.Get("get_course/:course_id/:course_type", h.GetCourseReservations) // สำหรับดึงค่า Course ทั้งชุด

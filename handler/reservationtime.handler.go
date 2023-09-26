@@ -10,21 +10,23 @@ import (
 )
 
 type ReservationTimeBody struct {
-	UserRefer        uint   `json:"user_refer"`
-	AdminRefer       uint   `json:"admin_refer"`
-	RoomRefer        string `json:"room_refer"`
-	CourseID         uint   `json:"course_id"`
-	CourseName       string `json:"course_name"`
-	CourseType       string `json:"course_type"`
-	CourseInstructor string `json:"course_instructor"`
-	DayOfWeek        string `json:"day_of_week"`
-	Description      string `json:"description"`
-	StartTime        string `json:"start_time"`
-	EndTime          string `json:"end_time"`
-	Date             string `json:"date"`
-	EndDate          string `json:"end_date"` // ใช้เฉพาะตอนเพิ่ม Course เป็นชุด, ไม่ใช้ตั้งเป็น null
-	Type             string `json:"type"`
-	Status           string `json:"status"`
+	UserRefer             uint   `json:"user_refer"`
+	AdminRefer            uint   `json:"admin_refer"`
+	RoomRefer             string `json:"room_refer"`
+	CourseID              uint   `json:"course_id"`
+	CourseSection         uint   `json:"course_section"`
+	CourseName            string `json:"course_name"`
+	CourseType            string `json:"course_type"`
+	CourseInstructor      string `json:"course_instructor"`
+	CourseInstructorEmail string `json:"course_instructor_email"`
+	DayOfWeek             string `json:"day_of_week"`
+	Description           string `json:"description"`
+	StartTime             string `json:"start_time"`
+	EndTime               string `json:"end_time"`
+	Date                  string `json:"date"`
+	EndDate               string `json:"end_date"` // ใช้เฉพาะตอนเพิ่ม Course เป็นชุด, ไม่ใช้ตั้งเป็น null
+	Type                  string `json:"type"`
+	Status                string `json:"status"`
 }
 
 // สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
@@ -41,9 +43,11 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 	res_time.AdminRefer = body.AdminRefer
 	res_time.RoomRefer = body.RoomRefer
 	res_time.CourseID = body.CourseID
+	res_time.CourseSection = body.CourseSection
 	res_time.CourseName = body.CourseName
 	res_time.CourseType = body.CourseType
 	res_time.CourseInstructor = body.CourseInstructor
+	res_time.CourseInstructorEmail = body.CourseInstructorEmail
 	res_time.DayOfWeek = body.DayOfWeek
 	res_time.Description = body.Description
 	res_time.StartTime = body.StartTime
@@ -203,11 +207,12 @@ func (h handler) GetAllReservationsByFilter(c *fiber.Ctx) error {
 // สำหรับดึงค่า Course ทั้งชุด
 func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 	course_id := c.Params("course_id")
+	course_section := c.Params("course_section")
 	course_type := c.Params("course_type")
 
 	var reservation_times []models.ReservationTime
 
-	if result := h.DB.Where("course_id = ? AND course_type = ?", course_id, course_type).Find(&reservation_times); result.Error != nil {
+	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ?", course_id, course_type, course_section).Find(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -225,9 +230,11 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	res_time.AdminRefer = body.AdminRefer
 	res_time.RoomRefer = body.RoomRefer
 	res_time.CourseID = body.CourseID
+	res_time.CourseSection = body.CourseSection
 	res_time.CourseName = body.CourseName
 	res_time.CourseType = body.CourseType
 	res_time.CourseInstructor = body.CourseInstructor
+	res_time.CourseInstructorEmail = body.CourseInstructorEmail
 	res_time.DayOfWeek = body.DayOfWeek
 	res_time.Description = body.Description
 	res_time.StartTime = body.StartTime
