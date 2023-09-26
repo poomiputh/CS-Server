@@ -10,21 +10,21 @@ import (
 )
 
 type ReservationTimeBody struct {
-	UserRefer   uint   `json:"user_refer"`
-	AdminRefer  uint   `json:"admin_refer"`
-	RoomRefer   string `json:"room_refer"`
-	CourseID    uint   `json:"course_id"`
-	CourseName  string `json:"course_name"`
-	CourseType  string `json:"course_type"`
-	Instructor  string `json:"instructor"`
-	DayOfWeek   string `json:"dayofweek"`
-	Description string `json:"description"`
-	StartTime   string `json:"start_time"`
-	EndTime     string `json:"end_time"`
-	Date        string `json:"date"`
-	EndDate     string `json:"end_date"` // ใช้เฉพาะตอนเพิ่ม Course เป็นชุด, ไม่ใช้ตั้งเป็น null
-	Type        string `json:"type"`
-	Status      string `json:"status"`
+	UserRefer        uint   `json:"user_refer"`
+	AdminRefer       uint   `json:"admin_refer"`
+	RoomRefer        string `json:"room_refer"`
+	CourseID         uint   `json:"course_id"`
+	CourseName       string `json:"course_name"`
+	CourseType       string `json:"course_type"`
+	CourseInstructor string `json:"course_instructor"`
+	DayOfWeek        string `json:"day_of_week"`
+	Description      string `json:"description"`
+	StartTime        string `json:"start_time"`
+	EndTime          string `json:"end_time"`
+	Date             string `json:"date"`
+	EndDate          string `json:"end_date"` // ใช้เฉพาะตอนเพิ่ม Course เป็นชุด, ไม่ใช้ตั้งเป็น null
+	Type             string `json:"type"`
+	Status           string `json:"status"`
 }
 
 // สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
@@ -43,7 +43,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 	res_time.CourseID = body.CourseID
 	res_time.CourseName = body.CourseName
 	res_time.CourseType = body.CourseType
-	res_time.Instructor = body.Instructor
+	res_time.CourseInstructor = body.CourseInstructor
 	res_time.DayOfWeek = body.DayOfWeek
 	res_time.Description = body.Description
 	res_time.StartTime = body.StartTime
@@ -227,7 +227,7 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	res_time.CourseID = body.CourseID
 	res_time.CourseName = body.CourseName
 	res_time.CourseType = body.CourseType
-	res_time.Instructor = body.Instructor
+	res_time.CourseInstructor = body.CourseInstructor
 	res_time.DayOfWeek = body.DayOfWeek
 	res_time.Description = body.Description
 	res_time.StartTime = body.StartTime
