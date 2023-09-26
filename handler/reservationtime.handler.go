@@ -144,7 +144,6 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 }
 
 // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
-// Needed update
 func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
 	del_course_id := c.Params("course_id")
 	del_course_section := c.Params("course_section")
@@ -152,7 +151,7 @@ func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
 
 	var reservation_times []models.ReservationTime
 
-	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ?", del_course_id, del_course_type, del_course_section).Find(&reservation_times); result.Error != nil {
+	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ? AND lead_reservation IS NULL", del_course_id, del_course_type, del_course_section).First(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -234,7 +233,6 @@ func (h handler) GetAllReservationsByFilter(c *fiber.Ctx) error {
 }
 
 // สำหรับดึงค่า Course ทั้งชุด
-// Needed update
 func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 	course_id := c.Params("course_id")
 	course_section := c.Params("course_section")
@@ -242,7 +240,7 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 
 	var reservation_times []models.ReservationTime
 
-	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ?", course_id, course_type, course_section).Find(&reservation_times); result.Error != nil {
+	if result := h.DB.Preload("TrailReservations").Where("course_id = ? AND course_type = ? AND course_section = ? AND lead_reservation IS NULL", course_id, course_type, course_section).First(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 

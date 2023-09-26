@@ -13,7 +13,7 @@ type ReservationTime struct {
 	CourseInstructorEmail string            `json:"course_instructor_email" gorm:"default: null"`
 	DayOfWeek             string            `json:"day_of_week" gorm:"default: null"`
 	LeadReservation       uint              `json:"lead_reservation" gorm:"default: null"`
-	TrailReservations     []ReservationTime `json:"trail_reservation" gorm:"foreignKey:LeadReservation"`
+	TrailReservations     []ReservationTime `json:"trail_reservation" gorm:"foreignKey:LeadReservation; constraint:OnDelete:CASCADE;"`
 	Description           string            `json:"description" gorm:"default: null"`
 	StartTime             string            `json:"start_time" gorm:"not null;default: null"`
 	EndTime               string            `json:"end_time" gorm:"not null;default: null"`
