@@ -166,14 +166,35 @@ func (h handler) GetAllReservations(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&ReservationTimes)
 }
 
-// สำหรับดึงค่า Reservation ทั้งหมดที่มี Type ที่ต้องการ
-func (h handler) GetAllReservationsByType(c *fiber.Ctx) error {
+// สำหรับดึงค่า Reservation ทั้งหมดที่มี Type และ Status ที่ต้องการ
+// Ex. http://localhost:3000/api/reservations/list
+// Output: ค่า Reservation ทั้งหมด
+// Ex. http://localhost:3000/api/reservations/list/all/approved
+// Output: ค่า Reservation ทั้งหมดที่มี Status = approved
+// Ex. http://localhost:3000/api/reservations/list/request/waiting
+// Output: ค่า Reservation ทั้งหมดที่มี Type = request และ Status = waiting
+func (h handler) GetAllReservationsByFilter(c *fiber.Ctx) error {
 	reservation_type := c.Params("type")
+	reservation_status := c.Params("status")
 
 	var filtered_reservation_times []models.ReservationTime
 
-	if result := h.DB.Where("type = ?", reservation_type).Find(&filtered_reservation_times); result.Error != nil {
-		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	if reservation_type == "" {
+		if result := h.DB.Find(&filtered_reservation_times); result.Error != nil {
+			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+		}
+	} else if reservation_type == "all" {
+		if result := h.DB.Where("status = ?", reservation_status).Find(&filtered_reservation_times); result.Error != nil {
+			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+		}
+	} else if reservation_status == "" {
+		if result := h.DB.Where("type = ?", reservation_type).Find(&filtered_reservation_times); result.Error != nil {
+			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+		}
+	} else {
+		if result := h.DB.Where("type = ? AND status = ?", reservation_type, reservation_status).Find(&filtered_reservation_times); result.Error != nil {
+			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(&filtered_reservation_times)
