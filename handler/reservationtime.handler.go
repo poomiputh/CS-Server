@@ -83,7 +83,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 
 		day_split := strings.Split(body.DayOfWeek, ",")
 
-		for date := start_date; date.Before(stop_date); date = date.AddDate(0, 0, 1) {
+		for date := start_date.AddDate(0, 0, 1); date.Before(stop_date); date = date.AddDate(0, 0, 1) {
 
 			var trail_res_time = models.ReservationTime{
 				UserRefer:             body.UserRefer,
@@ -127,7 +127,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 			}
 		}
 
-		batch_trail_reservations = batch_trail_reservations[1:]
+		// batch_trail_reservations = batch_trail_reservations[1:]
 		if result := h.DB.Create(&batch_trail_reservations); result.Error != nil {
 			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 		}
