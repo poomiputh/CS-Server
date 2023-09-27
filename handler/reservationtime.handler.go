@@ -254,23 +254,26 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
-	var res_time models.ReservationTime
-	res_time.UserRefer = body.UserRefer
-	res_time.AdminRefer = body.AdminRefer
-	res_time.RoomRefer = body.RoomRefer
-	res_time.CourseID = body.CourseID
-	res_time.CourseSection = body.CourseSection
-	res_time.CourseName = body.CourseName
-	res_time.CourseType = body.CourseType
-	res_time.CourseInstructor = body.CourseInstructor
-	res_time.CourseInstructorEmail = body.CourseInstructorEmail
-	res_time.DayOfWeek = body.DayOfWeek
-	res_time.Description = body.Description
-	res_time.StartTime = body.StartTime
-	res_time.EndTime = body.EndTime
-	res_time.StartDate = body.StartDate
-	res_time.Type = body.Type
-	res_time.Status = body.Status
+	var res_time = models.ReservationTime{
+		UserRefer:             body.UserRefer,
+		AdminRefer:            body.AdminRefer,
+		RoomRefer:             body.RoomRefer,
+		CourseID:              body.CourseID,
+		CourseSection:         body.CourseSection,
+		CourseName:            body.CourseName,
+		CourseType:            body.CourseType,
+		CourseInstructor:      body.CourseInstructor,
+		CourseInstructorEmail: body.CourseInstructorEmail,
+		DayOfWeek:             body.DayOfWeek,
+		LeadReservation:       body.LeadReservation,
+		Description:           body.Description,
+		StartTime:             body.StartTime,
+		EndTime:               body.EndTime,
+		StartDate:             body.StartDate,
+		EndDate:               body.EndDate,
+		Type:                  body.Type,
+		Status:                body.Status,
+	}
 
 	if result := h.DB.First(&res_time, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
