@@ -247,7 +247,7 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&reservation_times)
 }
 
-// Needed update
+// สำหรับแก้ไขค่า Reservation แบบเดี่ยว
 func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	body := ReservationTimeBody{}
@@ -275,9 +275,13 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 		Status:                body.Status,
 	}
 
-	if result := h.DB.First(&res_time, id); result.Error != nil {
+	var get_res models.ReservationTime
+
+	if result := h.DB.First(&get_res, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
-	h.DB.Save(&res_time)
-	return c.Status(fiber.StatusOK).JSON(&res_time)
+
+	h.DB.Model(&get_res).Omit("lead_reservation").Updates(&res_time)
+
+	return c.Status(fiber.StatusOK).JSON(&get_res)
 }
