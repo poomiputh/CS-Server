@@ -251,9 +251,11 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	body := ReservationTimeBody{}
+
 	if err := c.BodyParser(&body); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
+
 	var res_time = models.ReservationTime{
 		UserRefer:             body.UserRefer,
 		AdminRefer:            body.AdminRefer,
@@ -276,12 +278,18 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	}
 
 	var get_res models.ReservationTime
-
 	if result := h.DB.First(&get_res, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
+	var get_trail_res []models.ReservationTime
+	if result := h.DB.Where("lead_reservation = ?", id).Find(&get_trail_res); result.Error != nil {
+		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
+	}
+
 	h.DB.Model(&get_res).Omit("lead_reservation").Updates(&res_time)
+
+	h.DB.Model(&get_trail_res).Omit("lead_reservation").Updates(&res_time)
 
 	return c.Status(fiber.StatusOK).JSON(&get_res)
 }
