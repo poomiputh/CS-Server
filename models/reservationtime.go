@@ -13,7 +13,7 @@ type ReservationTime struct {
 	CourseInstructorEmail string            `json:"course_instructor_email" gorm:"default: null"`
 	DayOfWeek             string            `json:"day_of_week" gorm:"default: null"`
 	ParentReservation     uint              `json:"parent_reservation" gorm:"default: null"`
-	ChildReservations     []ReservationTime `json:"child_reservation" gorm:"foreignKey:LeadReservation; constraint:OnDelete:CASCADE;"`
+	ChildReservations     []ReservationTime `json:"child_reservation" gorm:"foreignKey:ParentReservation; constraint:OnDelete:CASCADE;"`
 	Description           string            `json:"description" gorm:"default: null"`
 	StartTime             string            `json:"start_time" gorm:"not null;default: null"`
 	EndTime               string            `json:"end_time" gorm:"not null;default: null"`
