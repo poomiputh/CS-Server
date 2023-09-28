@@ -20,7 +20,7 @@ type ReservationTimeBody struct {
 	CourseInstructor      string `json:"course_instructor"`
 	CourseInstructorEmail string `json:"course_instructor_email"`
 	DayOfWeek             string `json:"day_of_week"`
-	LeadReservation       uint   `json:"lead_reservation" gorm:"default: null"`
+	ParentReservation     uint   `json:"parent_reservation" gorm:"default: null"`
 	Description           string `json:"description"`
 	StartTime             string `json:"start_time"`
 	EndTime               string `json:"end_time"`
@@ -39,7 +39,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	var lead_res_time = models.ReservationTime{
+	var parent_res_time = models.ReservationTime{
 		UserRefer:             body.UserRefer,
 		AdminRefer:            body.AdminRefer,
 		RoomRefer:             body.RoomRefer,
@@ -50,7 +50,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 		CourseInstructor:      body.CourseInstructor,
 		CourseInstructorEmail: body.CourseInstructorEmail,
 		DayOfWeek:             body.DayOfWeek,
-		LeadReservation:       body.LeadReservation,
+		ParentReservation:     body.ParentReservation,
 		Description:           body.Description,
 		StartTime:             body.StartTime,
 		EndTime:               body.EndTime,
@@ -60,7 +60,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 		Status:                body.Status,
 	}
 
-	if result := h.DB.Create(&lead_res_time); result.Error != nil {
+	if result := h.DB.Create(&parent_res_time); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -79,13 +79,13 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		batch_trail_reservations := []models.ReservationTime{}
+		batch_child_reservations := []models.ReservationTime{}
 
 		day_split := strings.Split(body.DayOfWeek, ",")
 
 		for date := start_date.AddDate(0, 0, 1); date.Before(stop_date); date = date.AddDate(0, 0, 1) {
 
-			var trail_res_time = models.ReservationTime{
+			var child_res_time = models.ReservationTime{
 				UserRefer:             body.UserRefer,
 				AdminRefer:            body.AdminRefer,
 				RoomRefer:             body.RoomRefer,
@@ -96,7 +96,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 				CourseInstructor:      body.CourseInstructor,
 				CourseInstructorEmail: body.CourseInstructorEmail,
 				DayOfWeek:             body.DayOfWeek,
-				LeadReservation:       lead_res_time.ID,
+				ParentReservation:     parent_res_time.ID,
 				Description:           body.Description,
 				StartTime:             body.StartTime,
 				EndTime:               body.EndTime,
@@ -106,29 +106,29 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 			}
 
 			if date.Weekday() == time.Monday && slices.Contains(day_split, "1") {
-				trail_res_time.StartDate = date.Format(date_format)
-				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
+				child_res_time.StartDate = date.Format(date_format)
+				batch_child_reservations = append(batch_child_reservations, child_res_time)
 			}
 			if date.Weekday() == time.Tuesday && slices.Contains(day_split, "2") {
-				trail_res_time.StartDate = date.Format(date_format)
-				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
+				child_res_time.StartDate = date.Format(date_format)
+				batch_child_reservations = append(batch_child_reservations, child_res_time)
 			}
 			if date.Weekday() == time.Wednesday && slices.Contains(day_split, "3") {
-				trail_res_time.StartDate = date.Format(date_format)
-				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
+				child_res_time.StartDate = date.Format(date_format)
+				batch_child_reservations = append(batch_child_reservations, child_res_time)
 			}
 			if date.Weekday() == time.Thursday && slices.Contains(day_split, "4") {
-				trail_res_time.StartDate = date.Format(date_format)
-				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
+				child_res_time.StartDate = date.Format(date_format)
+				batch_child_reservations = append(batch_child_reservations, child_res_time)
 			}
 			if date.Weekday() == time.Friday && slices.Contains(day_split, "5") {
-				trail_res_time.StartDate = date.Format(date_format)
-				batch_trail_reservations = append(batch_trail_reservations, trail_res_time)
+				child_res_time.StartDate = date.Format(date_format)
+				batch_child_reservations = append(batch_child_reservations, child_res_time)
 			}
 		}
 
-		// batch_trail_reservations = batch_trail_reservations[1:]
-		if result := h.DB.Create(&batch_trail_reservations); result.Error != nil {
+		// batch_child_reservations = batch_child_reservations[1:]
+		if result := h.DB.Create(&batch_child_reservations); result.Error != nil {
 			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 		}
 
@@ -136,7 +136,7 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 
 	var result_reservation models.ReservationTime
 
-	if result := h.DB.Preload("TrailReservations").First(&result_reservation, lead_res_time.ID); result.Error != nil {
+	if result := h.DB.Preload("ChildReservations").First(&result_reservation, parent_res_time.ID); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -151,7 +151,7 @@ func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
 
 	var reservation_times []models.ReservationTime
 
-	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ? AND lead_reservation IS NULL", del_course_id, del_course_type, del_course_section).First(&reservation_times); result.Error != nil {
+	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ? AND parent_reservation IS NULL", del_course_id, del_course_type, del_course_section).First(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -240,7 +240,7 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 
 	var reservation_times []models.ReservationTime
 
-	if result := h.DB.Preload("TrailReservations").Where("course_id = ? AND course_type = ? AND course_section = ? AND lead_reservation IS NULL", course_id, course_type, course_section).First(&reservation_times); result.Error != nil {
+	if result := h.DB.Preload("ChildReservations").Where("course_id = ? AND course_type = ? AND course_section = ? AND parent_reservation IS NULL", course_id, course_type, course_section).First(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
@@ -281,14 +281,14 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	var get_trail_res []models.ReservationTime
-	if result := h.DB.Where("lead_reservation = ?", id).Find(&get_trail_res); result.Error != nil {
+	var get_child_res []models.ReservationTime
+	if result := h.DB.Where("parent_reservation = ?", id).Find(&get_child_res); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	h.DB.Model(&get_res).Omit("lead_reservation").Updates(&res_time)
+	h.DB.Model(&get_res).Omit("parent_reservation").Updates(&res_time)
 
-	h.DB.Model(&get_trail_res).Omit("lead_reservation").Updates(&res_time)
+	h.DB.Model(&get_child_res).Omit("parent_reservation").Updates(&res_time)
 
 	return c.Status(fiber.StatusOK).JSON(&get_res)
 }
