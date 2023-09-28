@@ -180,7 +180,7 @@ func (h handler) GetReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var reservation_times models.ReservationTime
 
-	if result := h.DB.First(&reservation_times, id); result.Error != nil {
+	if result := h.DB.Preload("ChildReservations").First(&reservation_times, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
