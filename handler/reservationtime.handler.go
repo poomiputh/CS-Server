@@ -267,7 +267,6 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 		CourseInstructor:      body.CourseInstructor,
 		CourseInstructorEmail: body.CourseInstructorEmail,
 		DayOfWeek:             body.DayOfWeek,
-		LeadReservation:       body.LeadReservation,
 		Description:           body.Description,
 		StartTime:             body.StartTime,
 		EndTime:               body.EndTime,
