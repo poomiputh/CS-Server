@@ -247,7 +247,8 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&reservation_times)
 }
 
-// สำหรับแก้ไขค่า Reservation แบบเดี่ยว
+// สำหรับแก้ไขค่า Reservation
+// ถ้าจะแก้เกี่ยวกับ Date ของ Course หรือ Request ให้ลบ Reservation แล้วเพิ่มใหม่
 func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	body := ReservationTimeBody{}
@@ -266,7 +267,6 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 		CourseType:            body.CourseType,
 		CourseInstructor:      body.CourseInstructor,
 		CourseInstructorEmail: body.CourseInstructorEmail,
-		DayOfWeek:             body.DayOfWeek,
 		Description:           body.Description,
 		StartTime:             body.StartTime,
 		EndTime:               body.EndTime,
