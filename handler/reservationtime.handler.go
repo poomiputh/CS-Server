@@ -286,7 +286,9 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 
 	h.DB.Model(&get_res).Omit("parent_reservation").Updates(&res_time)
 
-	h.DB.Model(&get_child_res).Omit("parent_reservation").Updates(&res_time)
+	if len(get_child_res) > 0 {
+		h.DB.Model(&get_child_res).Omit("parent_reservation").Updates(&res_time)
+	}
 
 	return c.Status(fiber.StatusOK).JSON(&get_res)
 }
