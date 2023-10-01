@@ -270,8 +270,6 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 		Description:           body.Description,
 		StartTime:             body.StartTime,
 		EndTime:               body.EndTime,
-		StartDate:             body.StartDate,
-		EndDate:               body.EndDate,
 		Type:                  body.Type,
 		Status:                body.Status,
 	}
