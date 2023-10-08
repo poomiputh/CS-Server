@@ -20,6 +20,8 @@ func (h handler) AddRoom(c *fiber.Ctx) error {
 	var room models.Room
 	room.RoomID = body.RoomID
 
+	// INSERT INTO `rooms` (`room_id`)
+	// VALUES ("CSB203");
 	if result := h.DB.Create(&room); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
@@ -30,6 +32,8 @@ func (h handler) AddRoom(c *fiber.Ctx) error {
 func (h handler) GetRooms(c *fiber.Ctx) error {
 	var Room []models.Room
 
+	// SELECT * FROM rooms;
+	// SELECT * FROM reservation_times WHERE room_refer IN (1, 2, 3, 4);
 	if result := h.DB.Preload("DataReservation").Find(&Room); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
