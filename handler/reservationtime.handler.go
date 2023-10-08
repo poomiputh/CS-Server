@@ -60,6 +60,8 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 		Status:                body.Status,
 	}
 
+	// INSERT INTO `reservation_times` (`user_refer`,`admin_refer`,`room_refer`, ...)
+	// VALUES (1, 2, "CSB203", ...);
 	if result := h.DB.Create(&parent_res_time); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
@@ -127,7 +129,8 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 			}
 		}
 
-		// batch_child_reservations = batch_child_reservations[1:]
+		// INSERT INTO `reservation_times` (`user_refer`,`admin_refer`,`room_refer`, ...)
+		// VALUES (1, 2, "CSB203", ...), (1, 2, "CSB203", ...);
 		if result := h.DB.Create(&batch_child_reservations); result.Error != nil {
 			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 		}
@@ -136,6 +139,8 @@ func (h handler) AddReservation(c *fiber.Ctx) error {
 
 	var result_reservation models.ReservationTime
 
+	// SELECT * FROM reservation_times WHERE id = 1;
+	// SELECT * FROM reservation_times WHERE parent_reservation IN (1);
 	if result := h.DB.Preload("ChildReservations").First(&result_reservation, parent_res_time.ID); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
@@ -151,10 +156,14 @@ func (h handler) DeleteCourseReservations(c *fiber.Ctx) error {
 
 	var reservation_times []models.ReservationTime
 
+	// SELECT * FROM reservation_times
+	// WHERE course_id = 204203 AND course_section = 1 AND parent_reservation IS NULL
+	// ORDER BY id LIMIT 1;
 	if result := h.DB.Where("course_id = ? AND course_type = ? AND course_section = ? AND parent_reservation IS NULL", del_course_id, del_course_type, del_course_section).First(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
+	// DELETE FROM reservation_times WHERE id = 1;
 	h.DB.Delete(&reservation_times)
 
 	return c.SendStatus(fiber.StatusOK)
@@ -166,10 +175,12 @@ func (h handler) DeleteReservation(c *fiber.Ctx) error {
 
 	var ReservationTimes models.ReservationTime
 
+	// SELECT * FROM reservation_times WHERE id = 1;
 	if result := h.DB.First(&ReservationTimes, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
+	// DELETE FROM reservation_times WHERE id = 1;
 	h.DB.Delete(&ReservationTimes)
 
 	return c.SendStatus(fiber.StatusOK)
@@ -180,6 +191,8 @@ func (h handler) GetReservation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var reservation_times models.ReservationTime
 
+	// SELECT * FROM reservation_times WHERE id = 1;
+	// SELECT * FROM reservation_times WHERE parent_reservation IN (1);
 	if result := h.DB.Preload("ChildReservations").First(&reservation_times, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
@@ -191,6 +204,7 @@ func (h handler) GetReservation(c *fiber.Ctx) error {
 func (h handler) GetAllReservations(c *fiber.Ctx) error {
 	var ReservationTimes []models.ReservationTime
 
+	// SELECT * FROM reservation_times;
 	if result := h.DB.Find(&ReservationTimes); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
@@ -211,6 +225,7 @@ func (h handler) GetAllReservationsByFilter(c *fiber.Ctx) error {
 
 	var filtered_reservation_times []models.ReservationTime
 
+	// SELECT * FROM reservation_times;
 	if reservation_type == "" {
 		if result := h.DB.Find(&filtered_reservation_times); result.Error != nil {
 			return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
@@ -240,6 +255,11 @@ func (h handler) GetCourseReservations(c *fiber.Ctx) error {
 
 	var reservation_times []models.ReservationTime
 
+	// SELECT * FROM reservation_times
+	// WHERE course_id = 204203 AND course_type = 'lab' AND course_section = 1 AND parent_reservation IS NULL
+	// ORDER BY id LIMIT 1;
+	// SELECT * FROM reservation_times WHERE id = 1;
+	// SELECT * FROM reservation_times WHERE parent_reservation IN (1);
 	if result := h.DB.Preload("ChildReservations").Where("course_id = ? AND course_type = ? AND course_section = ? AND parent_reservation IS NULL", course_id, course_type, course_section).First(&reservation_times); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
@@ -275,15 +295,20 @@ func (h handler) UpdateReservation(c *fiber.Ctx) error {
 	}
 
 	var get_res models.ReservationTime
+	// SELECT * FROM reservation_times;
 	if result := h.DB.First(&get_res, id); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
 	var get_child_res []models.ReservationTime
+	// SELECT * FROM reservation_times
+	// WHERE parent_reservation = 1;
 	if result := h.DB.Where("parent_reservation = ?", id).Find(&get_child_res); result.Error != nil {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
+	// UPDATE reservation_times SET user_refer=1, admin_refer=1, room_refer='CSB203', ... , #Except parent_reservation
+	// WHERE id=1;
 	h.DB.Model(&get_res).Omit("parent_reservation").Updates(&res_time)
 
 	if len(get_child_res) > 0 {
