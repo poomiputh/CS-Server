@@ -1,7 +1,7 @@
 package handler
 
 import (
-	jwtware "github.com/gofiber/contrib/jwt"
+	// jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -42,8 +42,8 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	reservations.Get("/get_course/:course_id/:course_section/:course_type", h.GetCourseReservations) // สำหรับดึงค่า Course ทั้งชุด
 	reservations.Put("/update/:id", h.UpdateReservation)
 
-	app.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
-	}))
+	// app.Use(jwtware.New(jwtware.Config{
+	// 	SigningKey: jwtware.SigningKey{Key: []byte("secret")},
+	// }))
 
 }
