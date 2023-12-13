@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (h handler) Login(c *fiber.Ctx) error {
@@ -25,8 +25,7 @@ func (h handler) Login(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, result.Error.Error())
 	}
 
-	// Throws Unauthorized error
-	if users.Password != login_pass {
+	if err := bcrypt.CompareHashAndPassword([]byte(users.Password), []byte(login_pass)); err != nil {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid password")
 	}
 

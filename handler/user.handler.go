@@ -4,6 +4,7 @@ import (
 	"go-fiber-api-docker/models"
 
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm/clause"
 )
 
@@ -24,6 +25,11 @@ func (h handler) AddUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	var user models.User
 	user.CollegeID = body.CollegeID
 	user.Fname = body.Fname
@@ -31,7 +37,7 @@ func (h handler) AddUser(c *fiber.Ctx) error {
 	user.Email = body.Email
 	user.Phone = body.Phone
 	user.Role = body.Role
-	user.Password = body.Password
+	user.Password = string(hashedPassword)
 
 	// INSERT INTO `users` (`college_id`,`email`,`fname`, ...)
 	// VALUES (640510111, "somchai_g@cmu.ac.th", "Somchai", ...);
@@ -87,10 +93,17 @@ func (h handler) DeleteUser(c *fiber.Ctx) error {
 
 func (h handler) UpdateUser(c *fiber.Ctx) error {
 	id := c.Params("id")
+
 	body := UserBody{}
 	if err := c.BodyParser(&body); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	var user models.User
 	user.CollegeID = body.CollegeID
 	user.Fname = body.Fname
@@ -98,7 +111,7 @@ func (h handler) UpdateUser(c *fiber.Ctx) error {
 	user.Email = body.Email
 	user.Phone = body.Phone
 	user.Role = body.Role
-	user.Password = body.Password
+	user.Password = string(hashedPassword)
 
 	// SELECT * FROM users WHERE id = 1;
 	if result := h.DB.First(&user, id); result.Error != nil {

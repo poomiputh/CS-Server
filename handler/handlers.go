@@ -1,7 +1,7 @@
 package handler
 
 import (
-	// jwtware "github.com/gofiber/contrib/jwt"
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -22,7 +22,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 
 	users := api.Group("/users")
 	users.Post("/add", h.AddUser)
-	users.Delete("/delete/:id", h.DeleteUser)
+
 	users.Get("/list", h.GetUsers)
 	users.Get("/get/:id", h.GetUser)
 
@@ -33,17 +33,20 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	// http://localhost:3000/api/reservations/add
 	// http://localhost:3000/api/reservations/delete/1
 	reservations := api.Group("/reservations")
-	reservations.Post("/add", h.AddReservation)                                                               // สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
-	reservations.Delete("/delete_course/:course_id/:course_section/:course_type", h.DeleteCourseReservations) // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
-	reservations.Delete("/delete/:id", h.DeleteReservation)                                                   // สำหรับลบ Reservation แบบเดี่ยว
-	reservations.Get("/get/:id", h.GetReservation)                                                            // สำหรับดึงค่า Reservation แบบเดี่ยว
+	reservations.Post("/add", h.AddReservation) // สำหรับเพิ่ม Reservation ทั้งแบบเดี่ยวและเป็นชุด
+
+	reservations.Get("/get/:id", h.GetReservation) // สำหรับดึงค่า Reservation แบบเดี่ยว
 	// reservations.Get("/list", h.GetAllReservations)
 	reservations.Get("/list/:type?/:status?", h.GetAllReservationsByFilter)                          // สำหรับดึงค่า Reservation ทั้งหมด หรือทั้งหมดที่มี Type และ Status ที่ต้องการ
 	reservations.Get("/get_course/:course_id/:course_section/:course_type", h.GetCourseReservations) // สำหรับดึงค่า Course ทั้งชุด
-	reservations.Put("/update/:id", h.UpdateReservation)
 
-	// app.Use(jwtware.New(jwtware.Config{
-	// 	SigningKey: jwtware.SigningKey{Key: []byte("secret")},
-	// }))
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
+	}))
+
+	users.Delete("/delete/:id", h.DeleteUser)
+	reservations.Put("/update/:id", h.UpdateReservation)
+	reservations.Delete("/delete_course/:course_id/:course_section/:course_type", h.DeleteCourseReservations) // สำหรับลบ Course ทั้งแบบเดี่ยวและเป็นชุด
+	reservations.Delete("/delete/:id", h.DeleteReservation)                                                   // สำหรับลบ Reservation แบบเดี่ยว
 
 }
